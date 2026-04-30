@@ -36,17 +36,11 @@ def run_daily_market_scan():
         print("[INFO] No Smart Money Concept signals detected today.")
         return
 
-    print(f"[INFO] Found {len(active_signals)} signals! Dispatching to WhatsApp...")
+    print(f"[INFO] Found {len(active_signals)} signals! Dispatching consolidated WhatsApp message...")
     
     notifier = WhatsAppNotifier()
-    for alert in active_signals:
-        notifier.send_alert(
-            ticker=alert["ticker"],
-            date=alert["date"],
-            close_price=alert["price"],
-            signal_type=alert["signal_type"],
-            interval="1d" 
-        )
+    # Pass the entire list at once
+    notifier.send_summary(signals=active_signals, interval="1d")
 
 if __name__ == "__main__":
     run_daily_market_scan()
