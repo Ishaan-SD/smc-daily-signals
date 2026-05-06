@@ -15,24 +15,34 @@ class SignalProcessor:
         true_range = np.max(ranges, axis=1)
         return true_range.rolling(length).mean()
 
-    def detect_bullish_fvg(self, df: pd.DataFrame) -> pd.Series:
+    def detect_bullish_fvg(self, df: pd.DataFrame, min_gap_percent=0.0) -> pd.Series:
         """
-        Translates the LuxAlgo Bullish FVG logic.
-        Condition: Current Low > High 2 bars ago AND Close > High 2 bars ago.
+        Strictly translates the LuxAlgo Bullish FVG logic, with an added 
+        custom quantitative filter to ignore "micro gaps".
         """
-        last_2_high = df['High'].shift(2)
-        last_close = df['Close'].shift(1)
-        last_open = df['Open'].shift(1)
+        # LuxAlgo variable mapping (3-candle sequence)
+        last_2_high = df['High'].shift(2)   # High of Bar 1
+        last_close = df['Close'].shift(1)   # Close of Bar 2 (The displacement candle)
+        last_open = df['Open'].shift(1)     # Open of Bar 2
         
-        # Calculate Bar Delta Percent as defined in LuxAlgo
+        # 1. LuxAlgo Displacement Filter (Momentum)
         bar_delta_percent = (last_close - last_open) / (last_open * 100)
+        dynamic_threshold = bar_delta_percent.abs().expanding().mean() * 2
         
+        # 2. NEW: Actual Gap Size Filter (Structural Width)
+        # Calculates the physical gap space as a percentage of the asset's price
+        actual_gap_size_percent = (df['Low'] - last_2_high) / last_2_high
+        
+        # 3. Exact LuxAlgo Condition + Micro-Gap Filter
         fvg_condition = (
             (df['Low'] > last_2_high) & 
-            (df['Close'] > last_2_high) & 
-            (bar_delta_percent > self.fvg_threshold)
+            (last_close > last_2_high) & 
+            (bar_delta_percent > dynamic_threshold) &
+            (actual_gap_size_percent >= min_gap_percent) # <-- The new strictness rule
         )
+        
         return fvg_condition
+    
 
     def detect_bullish_order_block(self, df: pd.DataFrame, swing_length=5) -> pd.Series:
         """

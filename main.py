@@ -1,24 +1,100 @@
 from data_fetcher import DataFetcher
 from signal_processor import SignalProcessor
 from notifier import WhatsAppNotifier
-
-# Top 20 Cryptocurrencies (Yahoo Finance Format)
-CRYPTO_TICKERS = [
-    "BTC-USD", "ETH-USD", "BNB-USD", "SOL-USD", "XRP-USD", 
-    "ADA-USD", "AVAX-USD", "DOGE-USD", "DOT-USD", "LINK-USD",
-    "MATIC-USD", "SHIB-USD", "LTC-USD", "BCH-USD", "UNI7083-USD"
-]
+from email_notifier import EmailNotifier
 
 # NIFTY 50 Indian Stocks (NSE Format)
 NSE_TICKERS = [
-    "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "BHARTIARTL.NS", 
-    "SBIN.NS", "INFY.NS", "LICI.NS", "ITC.NS", "HINDUNILVR.NS",
-    "LT.NS", "BAJFINANCE.NS", "HCLTECH.NS", "MARUTI.NS", "SUNPHARMA.NS",
-    "TATAMOTORS.NS", "TATASTEEL.NS", "KOTAKBANK.NS", "ASIANPAINT.NS", "TITAN.NS"
+    # --- Column 1 ---
+    "3BBLACKBIO.NS",    # 3B BLACKBIO
+    "ADANIPORTS.NS", # ADANI PORT
+    "BAJAJHLDNG.NS", # BAJAJ HOLDING
+    "BHARTIARTL.NS", # AIRTEL
+    "BLS.NS",        # BLS INTL
+    "BSE.NS",        # BSE LTD
+    "CAPLIPOINT.NS", # CAPLIN POINT
+    "CONCORDBIO.NS", # CONCORD BIOTECK
+    "DABUR.NS",      # DABUR
+    "DRREDDY.NS",    # DR REDDY
+    "ECLERX.NS",     # ECLERX
+    "GANESHBE.NS",   # GANESH BENZOPLAST
+    "HAL.NS",        # HAL
+    "HDFCBANK.NS",   # HDFC BANK
+    "INDIAMART.NS",  # INDIA MART
+    "INFY.NS",       # INFOSYS
+    "ITBEES.NS",     # ITBEES (ETF)
+    "ITC.NS",        # ITC
+    "JIOFIN.NS",     # JIO FIN
+    "CDSL.NS",       # CDSL
+    "CLEAN.NS",      # CLEAN SCIENCE
+    "CRISIL.NS",     # CRISIL
+    "DEEPINDS.NS",   # DEEP IND
+    "DIXON.NS",      # DIXON
+    "GANESHHOU.NS",  # GANESH HOUSING
+    "HDFCAMC.NS",    # HDFCAMC
+    "HLEGLAS.NS",    # HLEGLAS
+    "HOMEFIRST.NS",  # HOMEFIRST
+    "HUDCO.NS",      # HUDCO
+    "IEX.NS",        # IEX
+    "INDRAMEDCO.NS", # INDRAMEDCO
+    "JENBURPH.BO",   # JENBURPH (Primarily trades on BSE)
+    "JUSTDIAL.NS",   # JUST DIAL
+    "KFINTECH.NS",   # KFINTECH
+    "KNRCON.NS",     # KNRCONST
+    "JYOTIRES.BO",   # JYOTI RESIN (Primarily trades on BSE)
+    "JYOTHYLAB.NS",  # JYOTI LAB
+    "LAOPALA.NS",    # LA OPALA
+    "LT.NS",         # LT (Larsen & Toubro)
+    "MAPMYINDIA.NS", # MAPMYINDIA
+    "MAXHEALTH.NS",  # MAXHEALTH
+    "MGL.NS",        # MGL
+    "NESCO.NS",      # NESCO
+    "OBEROIRLTY.NS", # OBEROI REALITY
+    "OFSS.NS",       # OFSS
+    "PFC.NS",        # PFC
+    "POLYCAB.NS",    # POLYCAB
+    "RECLTD.NS",     # RECLTD
+    "SANGHVIMOV.NS", # SANGHVI MOVERS
+    "SUNTV.NS",      # SUN TV
+    "SUPRIYA.NS",    # SUPRIYA LIFE
+    "TCS.NS",        # TCS
+    "VBL.NS",        # VBL
+    "ZYDUSLIFE.NS",  # ZYDUS LIFE
+    "ADVENZYMES.NS", # ADVANCE EZMY
+    "BCG.NS",        # BCG
+    "ZENTEC.NS",     # ZEN TECH
+    "LIKHITHA.NS",   # LIKHITHA
+    "MAHSEAMLES.NS", # MAHARASHTRA SEAMLESS
+    "MANBA.NS",      # MANBA
+    "MANYAVAR.NS",   # MANYAVAR
+    "MISHTANN.BO",   # MISHTANN
+    "MSTCLTD.NS",    # MSTCLTD
+    "NAVA.NS",       # NAVA
+    "NEWGEN.NS",     # NEWGEN
+    "OIL.NS",        # OIL INDIA
+    "ORIENTCEM.NS",  # ORIENTCEMENT
+    "RAJOOENG.NS",   # RAJOO ENGG
+    "REPCOHOME.NS",  # REPCO HOME
+    "SAREGAMA.NS",   # SAREGAMA
+    "SHAREINDIA.NS", # SHAREINDIA
+    "SJS.NS",        # SJS
+    "SUYOG.NS",      # SUYOG
+    "TIMKEN.NS",     # TIMKEN
+    "UNIDT.NS",      # UNIDT
+    "WHIRLPOOL.NS",  # WHIRLPOOL
+    "WSTCSTPAPR.NS", # WSTCSTPAPR
+    "YATHARTH.NS",   # YATHARTH
+    "ANTHEM.NS",     #ANTEHM BIOSCIENCES
+    "CRAMC.NS",      #CANARA ROBECO ASSET MANAGEMENT
+    "CPCAP.NS",      #CP CAPITAL
+    "CPEDU.NS",      #CAREER POINT EDUTECH
+    "EUROPRATIK.NS", #EURO PRATIK SALES
+    "IGIL.NS",       #INTERNATIONAL GEMOLOGICAL INSTITUTE
+    "IKS.NS"         #INVENTURUS KNOWLEDGE SOLUTIONS
+
 ]
 
-# Combine both lists for the scanner
-ALL_TICKERS = CRYPTO_TICKERS + NSE_TICKERS
+ALL_TICKERS = NSE_TICKERS
 
 def run_daily_market_scan():
     print(f"Initiating Daily Scan for {len(ALL_TICKERS)} Assets...")
@@ -38,7 +114,7 @@ def run_daily_market_scan():
 
     print(f"[INFO] Found {len(active_signals)} signals! Dispatching consolidated WhatsApp message...")
     
-    notifier = WhatsAppNotifier()
+    notifier = EmailNotifier()
     # Pass the entire list at once
     notifier.send_summary(signals=active_signals, interval="1d")
 
