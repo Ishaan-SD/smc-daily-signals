@@ -3,8 +3,8 @@ name: Daily SMC Market Scanner
 on:
   schedule:
     # GitHub Actions uses UTC time. 
-    # 11:00 AM UTC is exactly 4:30 PM IST (After the Indian market closes).
-    - cron: '0 11 * * *'
+    # 11:00 AM UTC is exactly 4:43 PM IST (After the Indian market closes).
+    - cron: '13 11 * * *'
   
   # This line allows you to click a button to test it manually anytime
   workflow_dispatch: 
