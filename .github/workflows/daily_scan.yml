@@ -32,6 +32,10 @@ jobs:
       env:
         # This securely maps your GitHub Secrets back into the environment 
         # so your notifier.py os.environ.get() calls work perfectly.
+        env:
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
         TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
         TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
         YOUR_WHATSAPP_NUMBER: ${{ secrets.YOUR_WHATSAPP_NUMBER }}
