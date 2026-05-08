@@ -46,19 +46,24 @@ class SignalProcessor:
 
     def detect_bullish_order_block(self, df: pd.DataFrame, swing_length=5) -> pd.Series:
         """
-        Identifies a Bullish Order Block (The "Blue Box").
-        Simplified Vectorized Logic: Finds recent swing lows followed by a strong bullish break.
+        Translates LuxAlgo OB logic: OB is confirmed only when a BOS occurs.
         """
-        # Find rolling minimums to establish swing lows
-        df['Swing_Low'] = df['Low'] == df['Low'].rolling(window=swing_length, center=True).min()
+        # 1. Detect Swing Highs (Pivots)
+        # LuxAlgo uses high[size] > ta.highest(size) logic
+        df['is_swing_high'] = (df['High'] == df['High'].rolling(window=swing_length*2, center=True).max())
         
-        # Identify bearish candles (down candles)
-        df['Bearish_Candle'] = df['Close'] < df['Open']
+        # 2. Track the most recent un-broken Pivot High
+        # We use ffill() to keep the "level to beat" active
+        df['active_pivot_high'] = df['High'].where(df['is_swing_high']).ffill()
         
-        # A bullish order block candidate is the last bearish candle at a swing low
-        df['Bullish_OB_Candidate'] = df['Swing_Low'] & df['Bearish_Candle']
+        # 3. Detect the Break of Structure (BOS)
+        # LuxAlgo: ta.crossover(close, p_ivot.currentLevel)
+        df['has_bos'] = (df['Close'] > df['active_pivot_high']) & (df['Close'].shift(1) <= df['active_pivot_high'].shift(1))
         
-        return df['Bullish_OB_Candidate']
+        # 4. Identify the OB candle (The Blue Box source)
+        # LuxAlgo looks for the candle with the lowest 'Parsed Low' between the pivot and the break
+        # For a trigger alert, we return True on the bar where 'has_bos' is True
+        return df['has_bos']
 
     def generate_signals(self, stock_data_dict: dict) -> list:
         """
@@ -88,12 +93,13 @@ class SignalProcessor:
                     "price": close_price,
                     "signal_type": "🟦 Bullish Order Block"
                 })
-            elif latest_data['Bullish_FVG']:
-                alerts.append({
-                    "ticker": ticker,
-                    "date": latest_time,
-                    "price": close_price,
-                    "signal_type": "🟩 Bullish Fair Value Gap"
-                })
+            # uncomment below if we need to send Bullish FVG signals
+            # elif latest_data['Bullish_FVG']:
+            #     alerts.append({
+            #         "ticker": ticker,
+            #         "date": latest_time,
+            #         "price": close_price,
+            #         "signal_type": "🟩 Bullish Fair Value Gap"
+            #     })
                 
         return alerts
