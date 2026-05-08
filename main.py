@@ -107,15 +107,17 @@ def run_daily_market_scan():
     processor = SignalProcessor()
     active_signals = processor.generate_signals(market_data)
     
+    # Initialize the notifier early so we can use it in both scenarios
+    notifier = EmailNotifier() # Swap to WhatsAppNotifier() if preferred
+    
     # 3. Dispatch Alerts
     if not active_signals:
-        print("[INFO] No Smart Money Concept signals detected today.")
+        print("[INFO] No Smart Money Concept signals detected today. Sending heartbeat notification...")
+        # Pass the empty list so your notifier sends an "All Clear" email
+        notifier.send_summary(signals=[], interval="1d")
         return
 
-    print(f"[INFO] Found {len(active_signals)} signals! Dispatching consolidated WhatsApp message...")
-    
-    notifier = EmailNotifier()
-    # Pass the entire list at once
+    print(f"[INFO] Found {len(active_signals)} signals! Dispatching consolidated message...")
     notifier.send_summary(signals=active_signals, interval="1d")
 
 if __name__ == "__main__":
